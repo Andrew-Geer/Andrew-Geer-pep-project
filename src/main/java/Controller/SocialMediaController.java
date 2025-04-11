@@ -19,12 +19,10 @@ public class SocialMediaController {
      * suite must receive a Javalin object from this method.
      * @return a Javalin app object which defines the behavior of the Javalin controller.
      */
-    AccountService accountService;
-    MessageService messageService;
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
-        app.get("register", this::createNewUser);
+        app.post("register", this::createNewUser);
 
         return app;
     }
@@ -41,11 +39,31 @@ public class SocialMediaController {
     private void createNewUser(Context context)
     {
         AccountDAO accountDAO = new AccountDAO();
-
+        AccountService accountService = new AccountService();
         Account account = context.bodyAsClass(Account.class);
-        accountService.validateAccountInformation(account);
 
-        accountDAO.createNewAccount(account);
+        //Invalid Usernames return 400 status code
+        if (!accountService.validateNonEmptyUsername(account.username))
+        {
+            context.status(400);
+            return;
+        }
+        //Invalid Passwords return 400 status code
+        if(!accountService.validateAccountPassword(account.password))
+        {
+            context.status(400);
+            return;
+        }
+        //Duplicate Usernames return 
+        if(!accountDAO.checkUniqueUsername(account.username))
+        {
+            context.status(400);
+            return;
+        }
+        
+        account = accountDAO.createNewAccount(account);
+        context.json(account);
+        context.status(200);
     }
 
     //TODO Implement userLogin Endpoint
@@ -86,7 +104,4 @@ public class SocialMediaController {
     {
 
     }
-    
-
-
 }

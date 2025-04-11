@@ -12,21 +12,21 @@ public class AccountService
         passwordLengthRequirement = 4;
     }
 
-    public boolean validateAccountInformation(Account account)
+    public boolean validateAccountPassword(String password)
     {
-        String accountPassword = account.getPassword();
-        String accountUsername = account.getUsername();
-        AccountDAO accountDAO = new AccountDAO();
-
-        if (accountPassword.length() < passwordLengthRequirement)
+        if (password.length() < passwordLengthRequirement)
         {
             return false;
         }
-        if (accountUsername == "" || accountUsername == null)
+        return true;
+    }
+
+    public boolean validateNonEmptyUsername(String username)
+    {
+        if (username == "" || username == null)
         {
             return false;
         }
-
-        return accountDAO.checkUniqueUsername(accountUsername);
+        return true;
     }
 }
