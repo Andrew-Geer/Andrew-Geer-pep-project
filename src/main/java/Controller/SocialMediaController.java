@@ -17,6 +17,7 @@ public class SocialMediaController {
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
+        app.get("createNewUser", this::createNewUser);
 
         return app;
     }
@@ -28,6 +29,52 @@ public class SocialMediaController {
     private void exampleHandler(Context context) {
         context.json("sample text");
     }
+
+    //TODO Implement createNewUser Endpoint
+    private void createNewUser(Context context) 
+    {
+
+    }
+
+    //TODO Implement userLogin Endpoint
+    private void userLogin(Context context)
+    {
+
+    }
+    
+    //TODO Implement createNewMessage Endpoint
+    private void createNewMessage(Context context) 
+    {
+
+    }
+    //TODO Implement retriveAllMessages Endpoint
+    private void retriveAllMessages(Context context) 
+    {
+
+    }
+
+    //TODO Implement retriveAllMessages Endpoint
+    private void retriveAllMessagesByUserId(Context context) 
+    {
+
+    }
+
+    //TODO Implement retriveMessageById Endpoint
+    private void retriveMessageById(Context context) 
+    {
+
+    }
+    //TODO Implement deleteMessageById Endpoint
+    private void deleteMessageById(Context context)
+    {
+
+    }
+    //TODO Implement updateMessage Endpoint
+    private void updateMessage(Context context)
+    {
+
+    }
+    
 
 
 }
