@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.Account;
+import Model.Message;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import DAO.AccountDAO;
@@ -24,6 +25,7 @@ public class SocialMediaController {
         app.get("example-endpoint", this::exampleHandler);
         app.post("register", this::createNewUser);
         app.post("login", this::userLogin);
+        app.post("messages", this::createNewMessage);
 
         return app;
     }
@@ -87,7 +89,24 @@ public class SocialMediaController {
     //TODO Implement createNewMessage Endpoint
     private void createNewMessage(Context context) 
     {
+        //Variable decleration and creation
+        Message message = context.bodyAsClass(Message.class);
+        MessageDAO messageDAO = new MessageDAO();
+        MessageService messageService = new MessageService();
 
+        //Validates the entire message in one method rather then calling each individual validation method
+        if (!messageService.ValidateEntireMessage(message))
+        {
+            context.status(400);
+            return;
+        }
+
+        //Creating the message
+        message = messageDAO.createNewMessage(message);
+
+        //Setting up the return context
+        context.json(message);
+        context.status(200);
     }
     //TODO Implement retriveAllMessages Endpoint
     private void retriveAllMessages(Context context) 

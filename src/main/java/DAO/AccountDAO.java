@@ -90,4 +90,34 @@ public class AccountDAO
         
         return Optional.empty();
     }
+
+    public Optional<Account> getUserById(int ID)
+    {
+        try 
+        {
+            Connection connection = ConnectionUtil.getConnection();
+
+            String sql = "SELECT * FROM Account WHERE account_id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, ID);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Account account = new Account();
+                account.setAccount_id(rs.getInt("account_id"));
+                account.setUsername(rs.getString("username"));
+                account.setPassword(rs.getString("password"));
+    
+                return Optional.of(account);
+            }
+
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        
+        return Optional.empty();
+    }
 }
