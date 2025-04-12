@@ -23,6 +23,7 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
         app.post("register", this::createNewUser);
+        app.post("login", this::userLogin);
 
         return app;
     }
@@ -35,7 +36,6 @@ public class SocialMediaController {
         context.json("sample text");
     }
 
-    //TODO Implement createNewUser Endpoint
     private void createNewUser(Context context)
     {
         AccountDAO accountDAO = new AccountDAO();
@@ -66,10 +66,22 @@ public class SocialMediaController {
         context.status(200);
     }
 
-    //TODO Implement userLogin Endpoint
     private void userLogin(Context context)
     {
+        AccountService accountService = new AccountService();
+        Account account = context.bodyAsClass(Account.class);
 
+        int loginCanidateID = accountService.userLogin(account);
+
+        if (loginCanidateID == 0)
+        {
+            context.status(401);
+            return;
+        }
+
+        account.setAccount_id(loginCanidateID);
+        context.json(account);
+        context.status(200);
     }
     
     //TODO Implement createNewMessage Endpoint

@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class AccountDAO
 {
@@ -58,5 +59,35 @@ public class AccountDAO
             e.printStackTrace();
             return false;
         }
+    }
+
+    public Optional<Account> getLoginCredentials(String username)
+    {
+        try 
+        {
+            Connection connection = ConnectionUtil.getConnection();
+
+            String sql = "SELECT * FROM Account WHERE username = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, username);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Account account = new Account();
+                account.setAccount_id(rs.getInt("account_id"));
+                account.setUsername(rs.getString("username"));
+                account.setPassword(rs.getString("password"));
+    
+                return Optional.of(account);
+            }
+
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        
+        return Optional.empty();
     }
 }
