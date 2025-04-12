@@ -23,6 +23,7 @@ public class SocialMediaController {
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
+        app.get("messages", this::retriveAllMessages);
         app.post("register", this::createNewUser);
         app.post("login", this::userLogin);
         app.post("messages", this::createNewMessage);
@@ -111,7 +112,9 @@ public class SocialMediaController {
     //TODO Implement retriveAllMessages Endpoint
     private void retriveAllMessages(Context context) 
     {
-
+        MessageDAO messageDAO = new MessageDAO();
+        context.json(messageDAO.retriveAllMessages());
+        context.status(200);
     }
 
     //TODO Implement retriveAllMessages Endpoint
