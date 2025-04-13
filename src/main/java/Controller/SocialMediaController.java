@@ -2,6 +2,7 @@ package Controller;
 
 import Model.Account;
 import Model.Message;
+import java.util.Optional;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import DAO.AccountDAO;
@@ -9,11 +10,7 @@ import DAO.MessageDAO;
 import Service.AccountService;
 import Service.MessageService;
 
-/**
- * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
- * found in readme.md as well as the test cases. You should
- * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
- */
+
 public class SocialMediaController {
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
@@ -22,23 +19,21 @@ public class SocialMediaController {
      */
     public Javalin startAPI() {
         Javalin app = Javalin.create();
-        app.get("example-endpoint", this::exampleHandler);
         app.get("messages", this::retriveAllMessages);
         app.post("register", this::createNewUser);
         app.post("login", this::userLogin);
         app.post("messages", this::createNewMessage);
+        app.get("messages/{message_id}", this::retriveMessageById);
+        app.delete("messages/{message_id}", this::deleteMessageById);
+        app.patch("messages/{message_id}", this::updateMessage);
+        app.get("accounts/{account_id}/messages", this::retriveAllMessagesByUserId);
+
+        //app.get("accounts/{account_id}/messages", this::retriveAllMessagesByUserId);
 
         return app;
     }
 
-    /**
-     * This is an example handler for an example endpoint.
-     * @param context The Javalin Context object manages information about both the HTTP request and response.
-     */
-    private void exampleHandler(Context context) {
-        context.json("sample text");
-    }
-
+    //Endpoint method that will create a new user with the information provided
     private void createNewUser(Context context)
     {
         AccountDAO accountDAO = new AccountDAO();
@@ -69,6 +64,7 @@ public class SocialMediaController {
         context.status(200);
     }
 
+    //Endpoint method that will "login" a user
     private void userLogin(Context context)
     {
         AccountService accountService = new AccountService();
@@ -76,6 +72,8 @@ public class SocialMediaController {
 
         int loginCanidateID = accountService.userLogin(account);
 
+        //Checks if the method returned a valid canidate
+        //0 means that the username was not found in the database
         if (loginCanidateID == 0)
         {
             context.status(401);
@@ -87,7 +85,7 @@ public class SocialMediaController {
         context.status(200);
     }
     
-    //TODO Implement createNewMessage Endpoint
+    //Endpoint method that will create a new message
     private void createNewMessage(Context context) 
     {
         //Variable decleration and creation
@@ -109,7 +107,8 @@ public class SocialMediaController {
         context.json(message);
         context.status(200);
     }
-    //TODO Implement retriveAllMessages Endpoint
+
+    //Endpoint method that will retrive all methods found in the database
     private void retriveAllMessages(Context context) 
     {
         MessageDAO messageDAO = new MessageDAO();
@@ -117,25 +116,79 @@ public class SocialMediaController {
         context.status(200);
     }
 
-    //TODO Implement retriveAllMessages Endpoint
-    private void retriveAllMessagesByUserId(Context context) 
-    {
-
-    }
-
-    //TODO Implement retriveMessageById Endpoint
+    //Endpoint method that will retive a message provided its message id as a path variable
     private void retriveMessageById(Context context) 
     {
+        MessageDAO messageDAO = new MessageDAO();
+        int messageId = Integer.parseInt(context.pathParam("message_id"));
+        Optional<Message> OptionalMessage = messageDAO.retriveMessageById(messageId);
 
+        if (OptionalMessage.isPresent())
+        {
+            context.json(OptionalMessage.get());
+        }
+        context.status(200);
     }
-    //TODO Implement deleteMessageById Endpoint
+
+    //Endpoint method that will remove a message provided its message id as a path variable
+    //This will also return the deleated message as a confirmation
     private void deleteMessageById(Context context)
     {
+        MessageDAO messageDAO = new MessageDAO();
+        int messageId = Integer.parseInt(context.pathParam("message_id"));
+        Optional<Message> optionalDeleatedMessage = messageDAO.retriveMessageById(messageId);
 
+        if (optionalDeleatedMessage.isPresent())
+        {
+            messageDAO.deleteMessageById(messageId);
+            context.json(optionalDeleatedMessage.get());
+        }
+        context.status(200);
     }
-    //TODO Implement updateMessage Endpoint
+
+    //Endpoint method that will update a messages text provided its message id as a path variable
     private void updateMessage(Context context)
     {
+        //Variable decleration and creation
+        MessageDAO messageDAO = new MessageDAO();
+        MessageService messageService = new MessageService();
+        Message messageCanidate = context.bodyAsClass(Message.class);
+        
+        int messageId = Integer.parseInt(context.pathParam("message_id"));
+        String messageText = messageCanidate.message_text;
 
+        //Validates seperate aspects of the message becuse the validate entire message method was designed to check posted_by which may not be provided
+        if (!messageService.validateMessageLegnth(messageText))
+        {
+            context.status(400);
+            return;
+        }
+        if (!messageService.validateNonEmptyMessage(messageText))
+        {
+            context.status(400);
+            return;
+        }
+
+        //Gets the message opject
+        Optional<Message>updatedMessage = messageDAO.updateMessageText(messageId, messageCanidate);
+
+        //Checks if a message was found. If no message found it did not find a message with the same id
+        if (updatedMessage.isEmpty()) 
+        {
+            context.status(400);
+            return;
+        }
+        //Setting up the return context
+        context.json(updatedMessage.get());
+        context.status(200);
+    }
+    
+    //Endpoint method that will retrive every message a user has posted provided their id
+    private void retriveAllMessagesByUserId(Context context) 
+    {
+        MessageDAO messageDAO = new MessageDAO();
+        int accountId = Integer.parseInt(context.pathParam("account_id"));
+        context.json(messageDAO.retriveMessageByUserId(accountId));
+        context.status(200);
     }
 }

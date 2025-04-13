@@ -54,13 +54,16 @@ public class AccountService
         AccountDAO accountDAO = new AccountDAO();
         Optional<Account> optionalAccount = accountDAO.getLoginCredentials(loginAttempt.username);
 
+        //Checks if the optional is empty and exits if it is
         if (optionalAccount.isEmpty())
         {
             return 0;
         }
 
+        //Retrives the account out of the optional object
         validAccount = optionalAccount.get();
 
+        //Checks to see if the login is correct
         if (validAccount.password.equals(loginAttempt.password))
         {
             return validAccount.account_id;

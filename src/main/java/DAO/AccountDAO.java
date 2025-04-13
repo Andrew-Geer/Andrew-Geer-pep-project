@@ -11,14 +11,14 @@ import java.util.Optional;
 public class AccountDAO
 {
     /**
-     * A DAO that will create a new user in the database
+     * @info A DAO that will create a new user in the database
      * @param account A Account object that is to be inserted into the database
      * @return The Account object that was created in the database
      */
     public Account createNewAccount(Account account)
     {
         Connection connection = ConnectionUtil.getConnection();
-
+        //Try catch block to handle any sql erros that occur
         try {
             String sql = "INSERT INTO Account (username, password) VALUES (?, ?)";
             PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
@@ -28,20 +28,29 @@ public class AccountDAO
 
             ps.executeUpdate();
 
+            //Gets the generated id from the sql table and sets the account ID to the generated key
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     account.setAccount_id(generatedKeys.getInt(1));
                 }
             }
             
-        }catch(SQLException e){
+        }
+        //Catch block to print the stack trace
+        catch(SQLException e){
             e.printStackTrace();
         }
         return account;
     }
 
+    /**
+     * @infoA DAO that will check to see if a username already exists in the database
+     * @param username A username string that is to be checked
+     * @return True if the username is unique. False if the username is already in use.
+     */
     public boolean checkUniqueUsername(String username)
     {
+        //Try catch block to handle any sql erros that occur
         try 
         {
             Connection connection = ConnectionUtil.getConnection();
@@ -52,8 +61,11 @@ public class AccountDAO
 
             ResultSet rs = ps.executeQuery();
 
+            //Returns ture if there is a next entry
+            //Returns false is there is no content
             return !rs.next();
         }
+        //Catch block to print the stack trace
         catch(SQLException e)
         {
             e.printStackTrace();
@@ -61,10 +73,17 @@ public class AccountDAO
         }
     }
 
+    /**
+     * @info A DAO that will check to retrive the login credentials for an account. This is horrible practice but I assumed this is what the project wanted me to do.
+     * @param username A username string that is to be checked
+     * @return An optional object that will be null if the account is not found
+     */
     public Optional<Account> getLoginCredentials(String username)
     {
+        //Try catch block to handle any sql erros that occur
         try 
         {
+
             Connection connection = ConnectionUtil.getConnection();
 
             String sql = "SELECT * FROM Account WHERE username = ?";
@@ -73,6 +92,8 @@ public class AccountDAO
 
             ResultSet rs = ps.executeQuery();
 
+            //Gets information from the result set
+            //Returns the account if one is found
             if (rs.next()) {
                 Account account = new Account();
                 account.setAccount_id(rs.getInt("account_id"));
@@ -83,6 +104,7 @@ public class AccountDAO
             }
 
         }
+        //Catch block to print the stack trace
         catch(SQLException e)
         {
             e.printStackTrace();
@@ -91,8 +113,14 @@ public class AccountDAO
         return Optional.empty();
     }
 
+    /**
+     * @info A DAO that will check to retrive user information based on the user ID.
+     * @param ID The id of an account that will be returned
+     * @return An optional object that will be null if the account is not found
+     */
     public Optional<Account> getUserById(int ID)
     {
+        //Try catch block to handle any sql erros that occur
         try 
         {
             Connection connection = ConnectionUtil.getConnection();
@@ -103,6 +131,8 @@ public class AccountDAO
 
             ResultSet rs = ps.executeQuery();
 
+            //Gets information from the result set
+            //Returns the account if one is found
             if (rs.next()) {
                 Account account = new Account();
                 account.setAccount_id(rs.getInt("account_id"));
@@ -113,6 +143,7 @@ public class AccountDAO
             }
 
         }
+        //Catch block to print the stack trace
         catch(SQLException e)
         {
             e.printStackTrace();
